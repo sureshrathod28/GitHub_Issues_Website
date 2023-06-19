@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GitHub Issues</title>
+  <style>
+    #issue-list {
+      list-style-type: decimal;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="page-number">Page number 1</h1>
+  <button id="load_prev" disabled>Previous</button>
+  <button id="load_next">Next</button>
+  <ol id="issue-list"></ol>
+
+  <script>
+    let pageNumber = 1;
+    const perPage = 5;
+    let apiUrl = `https://api.github.com/repositories/1296269/issues?page=${pageNumber}&per_page=${perPage}`;
+
+    const loadIssues = async () => {
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        const issueList = document.getElementById('issue-list');
+        issueList.innerHTML = ''; // Clear previous issues
+
+        // Display the issue names
+        data.forEach(issue => {
+          const issueItem = document.createElement('li');
+          issueItem.textContent = issue.title;
+          issueList.appendChild(issueItem);
+        });
+
+        // Enable/disable next and previous buttons based on page number
+        const loadPrevButton = document.getElementById('load_prev');
+        const loadNextButton = document.getElementById('load_next');
+        loadPrevButton.disabled = pageNumber === 1;
+        loadNextButton.disabled = data.length < perPage;
+
+        // Update page number heading
+        const pageNumberHeading = document.getElementById('page-number');
+        pageNumberHeading.textContent = `Page number ${pageNumber}`;
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    const loadNextPage = () => {
+      pageNumber++;
+      apiUrl = `https://api.github.com/repositories/1296269/issues?page=${pageNumber}&per_page=${perPage}`;
+      loadIssues();
+    };
+
+    const loadPrevPage = () => {
+      if (pageNumber > 1) {
+        pageNumber--;
+        apiUrl = `https://api.github.com/repositories/1296269/issues?page=${pageNumber}&per_page=${perPage}`;
+        loadIssues();
+      }
+    };
+
+    // Load initial issues on page load
+    loadIssues();
+
+    // Attach event listeners to buttons
+    document.getElementById('load_next').addEventListener('click', loadNextPage);
+    document.getElementById('load_prev').addEventListener('click', loadPrevPage);
+  </script>
+</body>
+</html>
